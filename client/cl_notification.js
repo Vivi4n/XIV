@@ -70,5 +70,36 @@ exports('ShowTopNotification', (title, subtext, duration) => {
 });
 
 exports('ShowAdvancedRightNotification', (text, dict, icon, text_color, duration) => {
+	const _text = CreateVarString(10, "LITERAL_STRING", text);
+	const _dict = CreateVarString(10, "LITERAL_STRING", dict);
+	const sdict = CreateVarString(10, "LITERAL_STRING", "Transaction_Feed_Sounds");
+	const sound = CreateVarString(10, "LITERAL_STRING", "Transaction_Positive");
 
+	const struct1 = new DataView(new ArrayBuffer(48));
+	struct1.setInt32(0, duration, true);
+	struct1.setBigInt64(8, BigInt(sdict), true);
+
+	const struct2 = new DataView(new ArrayBuffer(76));
+	struct2.setBigInt64(8, BigInt(_text), true);
+	struct2.setBigInt64(16, BigInt(_dict), true);
+	struct2.setBigInt64(24, BigInt(GetHashKey(icon)), true);
+	struct2.setBigInt64(40, BigInt(GetHashKey(text_color)), true);
+	struct2.setInt32(48, 0, true); 
+
+	Citizen.InvokeNative("0xB249EBCB30DD88E0", struct1, struct2, 1);
+});
+
+exports('ShowBasicTopNotification', (text, duration) => {
+	const string = CreateVarString(10, "LITERAL_STRING", text);
+	const struct1 = new DataView(new ArrayBuffer(48));
+	struct1.setInt32(0, duration, true); // Duration
+	// Notification sounds (Entirely optional, currently disabled)
+	struct1.setBigInt64(8, BigInt(sound_dict), true);
+	struct1.setBigInt64(16, BigInt(sound), true);
+
+	const struct2 = new DataView(new ArrayBuffer(24));
+	struct2.setBigInt64(8, BigInt(string), true);
+	struct2.setBigInt64(16, BigInt(GetHashKey("COLOR_PURE_WHITE")), true);
+
+	UiFeedPostReticleMessage(struct1, struct2, 1);
 });
