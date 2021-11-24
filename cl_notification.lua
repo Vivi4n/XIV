@@ -1,3 +1,6 @@
+-- Example usage
+-- TriggerEvent('xiv:ShowAdvancedRightNotification', "your text", "generic_textures", "tick", "COLOR_PURE_WHITE", 4000)
+
 RegisterNetEvent('xiv:NotifyLeft')
 AddEventHandler('xiv:NotifyLeft', function(firsttext, secondtext, dict, icon, duration)
 	local _dict = dict
