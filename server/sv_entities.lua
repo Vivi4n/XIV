@@ -1,34 +1,33 @@
 Entities = {}
 
 function entity(type, location, name, metadata, update)
-	local self = {}
+	local ent = {}
+	ent.__index = ent
 
-	self.type = type or "no-persist"
-	self.uid = math.random()
-	self.location = location or { x = 0.0, y = 0.0, z = 0.0, heading = 0.0 }
-	self.metadata = metadata or {}
-	self.name = name or "Default"
+	ent.type = type or "no-persist"
+	ent.uid = math.random()
+	ent.location = location or { x = 0.0, y = 0.0, z = 0.0, heading = 0.0 }
+	ent.metadata = metadata or {}
+	ent.name = name or "Default"
 
-	self.functions = {}
-
-	self.functions.setLocation = function(x, y, z, heading)
+	function ent:setLocation(x, y, z, heading)
 		self.location = { x = x, y = y, z = z, heading = (heading or 0.0) }
 	end
 
-	self.functions.getLocation = function()
-		return.self.location
+	function ent:getLocation()
+		return self.location
 	end
 
-	self.functions.get = function(key)
+	function ent:get(key)
 		return self[key]
 	end
 
-	self.functions.set = function(key, value)
+	function ent:set(key, value)
 		self[key] = value
 		return self[key]
 	end
 
-	Entities[self.uid] = self.functions
+	Entities[ent.uid] = ent
 
 	print("[XIV] Entity created (" ..tostring(self.uid) .. "): " ..tostring(self.type) .. " " .. tostring(self.name))
 end
