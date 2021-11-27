@@ -57,3 +57,43 @@ function loadCharacter(_source, user, charid)
 		end
 	end)
 end
+
+function addCharacter(_source, user, firstname, lastname)
+	if (firstname and lastname) then
+		TriggerEvent("xiv_db:createUser", user.getIdentifier(), firstname, lastname, function(charID)
+			print("Character has been made.")
+			loadCharacter(_source, user, charID)
+		end)
+	end
+end
+
+AddEventHandler("xiv:getPlayerFromId", function(user, cb)
+	if (Users) then
+		if (Users[user]) then
+			cb(Users[user])
+		else
+			cb(nil)
+		end
+	else
+		cb(nil)
+	end
+end)
+
+AddEventHandler('playerDropped', function()
+	local Source = source
+
+	if (Users[Source]) then
+		TriggerEvent("xiv:playerDropped", Users[Source])
+		TriggerEvent("xiv_db:updateUser", Users[Source].getIdentifier(), tonumber(Users[Source].getSessionVar("charid")), {money = Users[Source].getMoney(), gold = Users[Source].getGold(), xp = tonumber(Users[Source].getXP()), level = tonumber(Users[Source].getLevel()) , job = Users[Source].getJob(), jobgrade = tonumber(Users[Source].getJobgrade())}, function()
+		Users[Source] = nil
+		end)
+	end
+end)
+
+AddEventHandler("xiv:getAllPlayers", function(cb)
+	cb(Users)
+end)
+
+function getPlayerFromId(id)
+	return Users[id]
+end
