@@ -97,3 +97,102 @@ end)
 function getPlayerFromId(id)
 	return Users[id]
 end
+
+local function savePlayerMoney()
+	SetTimeout(60000, function()
+		Citizen.CreateThread(function()
+			for k, v in pairs(Users) do
+				if Users[k] ~= nil then
+					TriggerEvent('xiv_db:updateUser', v.getIdentifier(), tonumber(v.getSessionVar("charid")), {money = v.getMoney(), gold = v.getGold(), xp = tonumber(v.getXP()), level = tonumber(v.getLevel()), job = v.getJob(), jobgrade = tonumber(v.getJobgrade())}, function()					
+					end)
+				end
+			end
+
+			savePlayerMoney()
+		end)
+	end)
+end
+
+AddEventHandler('xiv_db:doesUserExist', function(identifier, cb)
+    MySQL.Async.fetchAll('SELECT 1 FROM users WHERE `identifier`=@identifier;', {identifier = identifier}, function(users)
+        if users[1] then
+            cb(true)
+        else
+            cb(false)
+        end
+    end)
+end)
+
+local DBData
+
+function CharacterExist (id)	
+	local test = false
+	    for k,v in pairs(DBData) do
+			if v.characterid == id then
+				test = true
+			end
+		end
+    return (test)
+end	
+
+AddEventHandler('xiv_db:createUser', function(identifier, firstname, lastname, callback)
+	MySQL.Async.fetchAll('SELECT * FROM characters WHERE `identifier`=@identifier', {identifier = identifier}, function(users)
+		DBData = users
+		local charID = 1
+		while CharacterExist(charID) do 
+		   charID = charID + 1
+      		 end
+		print("Found charID "..charID)
+		MySQL.Async.execute('INSERT INTO characters (`identifier`, `firstname`, `lastname`, `characterid`) VALUES (@identifier, @firstname, @lastname, @characterid);',
+		{
+			identifier = identifier,
+			firstname = firstname,
+			lastname = lastname,
+			characterid = charID
+			
+		}, function(rowsChanged)
+			callback(charID)
+		end)
+	end)
+end)
+
+AddEventHandler('xiv_db:retrieveUser', function(identifier, charid, callback)
+	local SavedCallback = callback
+	MySQL.Async.fetchAll('SELECT * FROM characters WHERE `identifier`=@identifier AND `characterid`=@characterid;', {identifier = identifier, characterid = charid}, function(users)
+		if users[1] then
+			SavedCallback(users[1])
+		else
+			SavedCallback(false)
+		end
+	end)
+end)
+
+AddEventHandler('xiv_db:updateUser', function(identifier, charid, new, callback)
+	Citizen.CreateThread(function()
+		local updateString = ""
+
+		local length = tLength(new)
+		local cLength = 1
+		for k,v in pairs(new)do
+			if cLength < length then
+				if(type(v) == "number")then
+					updateString = updateString .. "`" .. k .. "`=" .. v .. ","
+				else
+					updateString = updateString .. "`" .. k .. "`='" .. v .. "',"
+				end
+			else
+				if(type(v) == "number")then
+					updateString = updateString .. "`" .. k .. "`=" .. v .. ""
+				else
+					updateString = updateString .. "`" .. k .. "`='" .. v .. "'"
+				end
+			end
+			cLength = cLength + 1
+		end
+		MySQL.Async.execute('UPDATE characters SET ' .. updateString .. ' WHERE `identifier`=@identifier AND `characterid`=@characterid', {identifier = identifier, characterid = charid}, function(done)
+			if callback then
+				callback(true)
+			end
+		end)
+	end)
+end)
