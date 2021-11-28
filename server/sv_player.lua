@@ -11,3 +11,20 @@ function CreateRoleplayPlayer(source, identifier, name, money, gold, license, gr
 	pl.level = level
 	pl.job = job
 	pl.jobgrade = jobgrade
+
+	local rTable = {}
+	rTable.setLevelwXP = function(m)
+		if type(m) == "number" then
+			if m > pl.level then
+				pl.level = m
+				TriggerClientEvent('xiv:addLevel', pl.source, m)
+				TriggerClientEvent('xiv:activateLevel', pl.source, pl.level)
+			else
+				pl.level = m
+				TriggerClientEvent('xiv:removeLevel', pl.source, m)
+				TriggerClientEvent('xiv:activateLevel', pl.source, pl.level)
+			end
+		else
+			print("XIV Error: There's an issue whilst setting level, something different than a number was entered.")
+		end
+	end
