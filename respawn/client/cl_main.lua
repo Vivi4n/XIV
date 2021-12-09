@@ -70,4 +70,9 @@ Citizen.CreateThread(function()
                     Wait(1)
                     ProcessCamControls()
                     DrawTxt(Config.LocaleTimer .. " " .. tonumber(string.format("%.0f", (((GetGameTimer() - timer * -1)/1000))), 0.50, 0.80, 0.7, 0.7, true, 255, 255, 255, 255, true))
+                else
+                    break
+                end
+            end
+            
 end)
